@@ -71,7 +71,7 @@ export function App() {
                 <h1>Long Reef weather station</h1>
                 <a href="https://www.flysydney.com.au/" class="logo">
                     <img
-                        src="/src/assets/SPHGC.png"
+                        src="./assets/SPHGC.png"
                         alt="SPHGC logo"
                         height="50"
                         width="50"
