@@ -1,7 +1,8 @@
 import { render } from 'preact';
-import './style.css';
 import { useEffect } from 'preact/hooks';
+import logoImgUrl from './assets/SPHGC.png';
 import DataManager from './data/dataManager';
+import './style.css';
 
 const HOBO_WEBSOCKET_URL =
     'wss://api-onset-prod.scriptrapps.io//RThGMDEzNDc3NA==';
@@ -71,7 +72,7 @@ export function App() {
                 <h1>Long Reef weather station</h1>
                 <a href="https://www.flysydney.com.au/" class="logo">
                     <img
-                        src="./SPHGC.png"
+                        src={logoImgUrl}
                         alt="SPHGC logo"
                         height="50"
                         width="50"
