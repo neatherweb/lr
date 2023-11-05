@@ -39,7 +39,7 @@ function getLatestParams(stream: any) {
 }
 
 function requestTSData(
-    conn: WebSocket,
+    ws: WebSocket,
     id: string,
     streams: any[],
     from_date: number,
@@ -53,14 +53,14 @@ function requestTSData(
         id: id,
     };
 
-    if (conn.readyState == conn.OPEN) {
-        console.log('Using WSS conn' + conn);
+    if (ws.readyState == ws.OPEN) {
+        console.log('Using WSS conn' + ws);
         console.log('payload=' + JSON.stringify(payload));
-        conn.send(JSON.stringify(payload));
+        ws.send(JSON.stringify(payload));
     }
 }
 
-function requestLatestData(conn: WebSocket, id: string, streams: any[]) {
+function requestLatestData(ws: WebSocket, id: string, streams: any[]) {
     const payload = {
         method: ApiMethods.GetUserData,
         params: {
@@ -69,22 +69,22 @@ function requestLatestData(conn: WebSocket, id: string, streams: any[]) {
         id: id,
     };
 
-    if (conn.readyState == conn.OPEN) {
-        console.log('Using WSS conn' + conn);
+    if (ws.readyState == ws.OPEN) {
+        console.log('Using WSS conn' + ws);
         console.log('payload=' + JSON.stringify(payload));
-        conn.send(JSON.stringify(payload));
+        ws.send(JSON.stringify(payload));
     }
 }
 
 export default class DataManager {
     constructor(
-        private readonly conn: WebSocket,
+        private readonly ws: WebSocket,
         tsdataUpdater: (arg0: any) => void,
         livedataUpdater: (arg0: any) => void,
         errorHandler: (arg0: any) => void
     ) {
-        this.conn = conn;
-        this.conn.onmessage = function (event: { data: string }) {
+        this.ws = ws;
+        this.ws.onmessage = function (event: { data: string }) {
             console.log(event);
             const data = JSON.parse(event.data);
             console.log('Status=' + data.status);
@@ -124,7 +124,7 @@ export default class DataManager {
         from_date: number,
         to_date: number
     ) {
-        return requestTSData(this.conn, id, streams, from_date, to_date);
+        return requestTSData(this.ws, id, streams, from_date, to_date);
     }
 
     /**
@@ -135,7 +135,7 @@ export default class DataManager {
      * @param stream Data stream you want the latest value from. Use stream.<metric> constants to identify the stream.
      */
     RequestLatestData(id: string, stream: any) {
-        return requestLatestData(this.conn, id, stream);
+        return requestLatestData(this.ws, id, stream);
     }
 
     get Streams() {
