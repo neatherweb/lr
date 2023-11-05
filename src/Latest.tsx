@@ -33,7 +33,7 @@ export const Latest = ({
             <div class="title">
                 {formatDateTime(latestDataEntry.timestamp)}
                 {sinceLatestData > 60000 ? (
-                    <>, {Math.floor(sinceLatestData / 60000)} min ago</>
+                    <div>{Math.floor(sinceLatestData / 60000)} min ago</div>
                 ) : null}
             </div>
             <div class="wind">
@@ -69,13 +69,13 @@ export const Latest = ({
                 </div>
             </div>
             <div class="direction">
-                <svg viewBox="0 0 50 50" width="50" height="50" class="circle">
+                <svg viewBox="0 0 48 48" width="48" height="48" class="circle">
                     <path
                         id="arc"
                         fill="#9aed8b"
                         stroke="none"
                         fill-rule="evenodd"
-                        d="M 48.77641290737884 17.274575140626315 A 25 25 0 0 0 34.3651648353978 1.8204036358303135 L 25 25 Z M 41.16796077701761 19.746711095625894 A 17 17 0 0 0 31.368312088070503 9.237874472364613 L 25 25 Z"
+                        d="M 46.82535639108369 16.58359213500126 A 24 24 0 0 0 32.99055824198189 1.7475874903971018 L 24 24 Z M 39.21690426072246 19.05572809000084 A 16 16 0 0 0 29.99370549465459 9.165058326931401 L 24 24 Z"
                     ></path>
                 </svg>
                 <div
