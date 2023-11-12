@@ -1,9 +1,10 @@
 import { render } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { WindSpeed } from './WindSpeed';
-import logoImgUrl from './assets/SPHGC.png';
+import { WindCharts } from './WindCharts/WindCharts';
 import DataManager from './data/dataManager';
 import './style.css';
+import { Header } from './Header/Header';
+import { Latest } from './Latest/Latest';
 
 const HOBO_WEBSOCKET_URL =
     'wss://api-onset-prod.scriptrapps.io//RThGMDEzNDc3NA==';
@@ -137,18 +138,17 @@ export function App() {
 
     return (
         <>
-            <header>
-                <h1>Long Reef weather station</h1>
-                <a href="https://www.flysydney.com.au/" class="logo">
-                    <img
-                        src={logoImgUrl}
-                        alt="SPHGC logo"
-                        height="50"
-                        width="50"
+            <Header />
+            {stationData.length > 0 ? (
+                <>
+                    <Latest
+                        latestDataEntry={stationData[stationData.length - 1]}
                     />
-                </a>
-            </header>
-            <WindSpeed stationData={stationData} />
+                    <WindCharts stationData={stationData} />
+                </>
+            ) : (
+                <>Loading...</>
+            )}
         </>
     );
 }

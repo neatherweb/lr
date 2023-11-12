@@ -1,0 +1,103 @@
+.speedChart {
+    display: grid;
+    grid-template-columns: auto 1.6em 1.7em;
+    grid-template-rows: min-content 200px 1.5em;
+    grid-template-areas:
+        'a      title-kmh  title-kt'
+        'chart  kmh        knots'
+        'time   b          b';
+}
+
+.chart {
+    grid-area: chart;
+}
+
+.timeaxis {
+    grid-area: time;
+    border-top: 1px solid #cecece;
+    position: relative;
+}
+
+.timeaxis .xlabel {
+    position: absolute;
+    top: 0;
+    font-size: 0.7em;
+    line-height: 1.3em;
+    color: #696969;
+}
+
+.timeaxis .xlabel .tick {
+    width: 50%;
+    height: 6px;
+    box-sizing: content-box;
+    border-right: 1px solid #cecece;
+}
+
+.speedChart .title-kmh,
+.speedChart .title-kt {
+    padding: 0 0 0.3em 0;
+    font-size: 0.6em;
+    color: #696969;
+    text-align: center;
+}
+
+.speedChart .title-kmh {
+    grid-area: title-kmh;
+}
+
+.speedChart .title-kt {
+    grid-area: title-kt;
+}
+
+.kmhaxis {
+    grid-area: kmh;
+    height: 100%;
+    border-left: 1px solid #cecece;
+    position: relative;
+}
+
+.ylabel {
+    position: absolute;
+    left: 0;
+    font-size: 0.7em;
+    line-height: 1.3em;
+    color: #696969;
+    vertical-align: bottom;
+    margin: -0.6em 0 0 0;
+}
+
+.kmhaxis .ylabel,
+.ktaxis .ylabel {
+    margin: -2.1em 0 0 0;
+}
+
+.ylabel .tick {
+    display: inline-block;
+    width: 6px;
+    height: 0.3em;
+    border-top: 1px solid #cecece;
+    margin: 0 1px 0 0;
+}
+
+.ktaxis {
+    grid-area: knots;
+    height: 100%;
+    position: relative;
+}
+
+.directionChart {
+    display: grid;
+    grid-template-columns: auto 3.3em;
+    grid-template-rows: 200px;
+    grid-template-areas: 'chart diraxis';
+}
+
+.directionChart .chart {
+    background: rgb(243, 243, 243);
+}
+
+.diraxis {
+    grid-area: diraxis;
+    height: 100%;
+    position: relative;
+}

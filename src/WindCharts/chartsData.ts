@@ -1,13 +1,13 @@
-import { CHART_DATA_INTERVAL, StationData } from '.';
-import { XLabels, getXLabels } from './xLabels';
+import { CHART_DATA_INTERVAL, StationData } from '..';
+import { XLabels, getXLabels } from './Labels/xLabels';
 import {
     CHART_HEIGHT,
     CHART_WIND_SPEED_RANGE_KMH,
-    WIND_DIRECTION_WINDOW_CENTER,
+    MEDIAN_FLYABLE_WIND_DIRECTION,
     YLabels,
     getYDirectionLabels,
     getYLabels,
-} from './yLabels';
+} from './Labels/yLabels';
 
 export interface TimeRange {
     start: number;
@@ -28,7 +28,7 @@ const getChartPoint = (relativeCoordinate: number, range: number): number => {
 
 const getWindDirectionY = (direction: number): number => {
     const relativeWindDirectionY = (direction / 360) * 100; // %
-    const shift = 180 - WIND_DIRECTION_WINDOW_CENTER;
+    const shift = 180 - MEDIAN_FLYABLE_WIND_DIRECTION;
     const relativeShift = (shift / 360) * 100;
     const shiftedWindDirection = relativeWindDirectionY + relativeShift;
     return shiftedWindDirection <= 100
@@ -36,10 +36,20 @@ const getWindDirectionY = (direction: number): number => {
         : shiftedWindDirection - 100;
 };
 
-export const getChartData = (
+export interface ChartsData {
+    windSpeedXYPoints: string;
+    gustSpeedXYPoints: string;
+    timeLabels: XLabels;
+    kmhLabels: YLabels;
+    ktLabels: YLabels;
+    windDirectionXYPoints: [number, number][];
+    directionLabels: YLabels;
+}
+
+export const getChartsData = (
     stationData: StationData[],
     width: number
-): [string, string, XLabels, YLabels, YLabels, [number, number][], YLabels] => {
+): ChartsData => {
     const step = 1000;
     let now = Date.now();
     /**
@@ -56,9 +66,9 @@ export const getChartData = (
         CHART_WIND_SPEED_RANGE_KMH,
         true
     );
-    let windChartPoints = '';
-    let gustChartPoints = '';
-    const windDirectionPoints = [];
+    let windSpeedXYPoints = '';
+    let gustSpeedXYPoints = '';
+    const windDirectionXYPoints = [];
     let i = chartTimeRange.start;
     while (i <= chartTimeRange.end) {
         const entry = stationData.find((entry) => entry.timestamp === i);
@@ -67,27 +77,27 @@ export const getChartData = (
             const x = getChartPoint(relativeX, width);
             const relativeWindY = getRelativeWindSpeedY(entry.wind);
             const windY = getChartPoint(relativeWindY, CHART_HEIGHT);
-            windChartPoints += `${x},${windY} `;
+            windSpeedXYPoints += `${x},${windY} `;
             const relativeGustY = getRelativeWindSpeedY(entry.gust);
             const gustY = getChartPoint(relativeGustY, CHART_HEIGHT);
-            gustChartPoints += `${x},${gustY} `;
+            gustSpeedXYPoints += `${x},${gustY} `;
             const windDirectionY = getWindDirectionY(entry.direction);
-            windDirectionPoints.push([x, windDirectionY]);
+            windDirectionXYPoints.push([x, windDirectionY]);
         }
         i += step;
     }
-    const xLabels = getXLabels(chartTimeRange, width);
-    const yLabelsKmh = getYLabels(true);
-    const yLabelsKt = getYLabels(false);
-    const yDirectionLabels = getYDirectionLabels();
+    const timeLabels = getXLabels(chartTimeRange, width);
+    const kmhLabels = getYLabels(true);
+    const ktLabels = getYLabels(false);
+    const directionLabels = getYDirectionLabels();
 
-    return [
-        windChartPoints.trim(),
-        gustChartPoints.trim(),
-        xLabels,
-        yLabelsKmh,
-        yLabelsKt,
-        windDirectionPoints,
-        yDirectionLabels,
-    ];
+    return {
+        windSpeedXYPoints: windSpeedXYPoints.trim(),
+        gustSpeedXYPoints: gustSpeedXYPoints.trim(),
+        timeLabels,
+        kmhLabels,
+        ktLabels,
+        windDirectionXYPoints,
+        directionLabels,
+    };
 };
