@@ -1,5 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import {
+    StateUpdater,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from 'preact/hooks';
 import { StationData } from '..';
+import { useDocumentVisible } from '../utils/useDocumentVisible';
 import { useResizeObserver } from '../utils/useResizeObserver';
 import { XLabels } from './Labels/xLabels';
 import {
@@ -12,11 +19,24 @@ import { ChartsData, getChartsData } from './chartsData';
 
 const CHART_REFRESH_INTERVAL = 3000; // ms
 
+const triggerChartRepaint = (
+    stationData: StationData[],
+    chartWidth: number,
+    setChartsData: StateUpdater<ChartsData>
+) => {
+    if (chartWidth === 0) {
+        setChartsData(undefined);
+    } else {
+        const chartsData = getChartsData(stationData, chartWidth);
+        setChartsData(chartsData);
+    }
+};
+
 export const WindCharts = ({ stationData }: { stationData: StationData[] }) => {
     const windSpeedWrapperRef = useRef<HTMLDivElement>(null);
     const [chartWidth, setChartWidth] = useState(0);
-
     const [chartsData, setChartsData] = useState<ChartsData>();
+    const isDocumentVisible = useDocumentVisible();
 
     const updateChartWrapperWidth = useCallback(() => {
         const rect = windSpeedWrapperRef.current?.getBoundingClientRect();
@@ -24,32 +44,29 @@ export const WindCharts = ({ stationData }: { stationData: StationData[] }) => {
             return;
         }
         setChartWidth(rect.width || 0);
-    }, [windSpeedWrapperRef]);
+    }, [windSpeedWrapperRef, setChartWidth]);
     useResizeObserver(windSpeedWrapperRef, updateChartWrapperWidth);
 
     useEffect(() => {
         let intervalId: number;
-        if (chartWidth === 0) {
-            setChartsData(undefined);
+        // Repaint charts only if current browser tab is active.
+        // This results in saving battery for mobile devices.
+        if (isDocumentVisible) {
+            triggerChartRepaint(stationData, chartWidth, setChartsData);
+            intervalId = setInterval(() => {
+                triggerChartRepaint(stationData, chartWidth, setChartsData);
+            }, CHART_REFRESH_INTERVAL);
         } else {
-            const chartsData = getChartsData(stationData, chartWidth);
-            setChartsData(chartsData);
-        }
-
-        intervalId = setInterval(() => {
-            if (chartWidth === 0) {
-                setChartsData(undefined);
-            } else {
-                const chartData = getChartsData(stationData, chartWidth);
-                setChartsData(chartData);
+            if (intervalId !== undefined) {
+                clearInterval(intervalId);
             }
-        }, CHART_REFRESH_INTERVAL);
+        }
         return () => {
             if (intervalId !== undefined) {
                 clearInterval(intervalId);
             }
         };
-    }, [stationData, chartWidth, setChartsData]);
+    }, [isDocumentVisible, stationData, chartWidth, setChartsData]);
 
     return (
         <>

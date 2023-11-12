@@ -1,4 +1,4 @@
-const STATION_TIMEZONE = 'Australia/Sydney';
+import { STATION } from '../station';
 
 const dateTimeFormat = new Intl.DateTimeFormat('en-GB', {
     month: 'short',
@@ -6,13 +6,13 @@ const dateTimeFormat = new Intl.DateTimeFormat('en-GB', {
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: STATION_TIMEZONE,
+    timeZone: STATION.TIMEZONE,
 });
 
 const timeFormatHHMM = new Intl.DateTimeFormat('en-GB', {
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: STATION_TIMEZONE,
+    timeZone: STATION.TIMEZONE,
 });
 
 export const formatDateTime = (timestamp: number): string => {

@@ -5,4 +5,6 @@ export const STATION = {
         MIN: 22,
         MAX: 72,
     },
+    /** Station time zone name in IANA format https://data.iana.org/time-zones */
+    TIMEZONE: 'Australia/Sydney',
 };
