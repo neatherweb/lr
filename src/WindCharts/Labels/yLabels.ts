@@ -1,24 +1,38 @@
-import { getLabelsInterval } from './utils';
+import { STATION } from '../../station';
+import { getLabelsInterval } from '../../utils/utils';
 
 const Y_AXIS_INTERVALS: number[] = [10, 5, 1];
 const MIN_Y_LABELS_COUNT = 1;
 const MAX_Y_LABELS_COUNT = 10;
 const Y_LABEL_HEIGHT = 16;
 
-const WIND_DIRECTION_WINDOW_MIN = 22; // degrees
-const WIND_DIRECTION_WINDOW_MAX = 72; // degrees
-const WIND_DIRECTION_WINDOW_RANGE =
-    WIND_DIRECTION_WINDOW_MAX - WIND_DIRECTION_WINDOW_MIN; // degrees
+/**
+ * Range of flyable wind directions in degrees
+ */
+const FLYABLE_WIND_DIRECTION_RANGE =
+    STATION.FLYABLE_WIND_DIRECTIONS.MAX - STATION.FLYABLE_WIND_DIRECTIONS.MIN;
 
-export const WIND_DIRECTION_WINDOW_CENTER =
-    WIND_DIRECTION_WINDOW_MIN + WIND_DIRECTION_WINDOW_RANGE / 2; // degrees
+/**
+ * A median flyable wind direction, degrees
+ */
+export const MEDIAN_FLYABLE_WIND_DIRECTION =
+    STATION.FLYABLE_WIND_DIRECTIONS.MIN + FLYABLE_WIND_DIRECTION_RANGE / 2;
 
-export const CHART_HEIGHT = 200; // px
+/**
+ * Chart component height, pixels
+ */
+export const CHART_HEIGHT = 200;
 
-export const CHART_WIND_DIRECTION_WINDOW_HEIGHT =
-    (WIND_DIRECTION_WINDOW_RANGE / 360) * 100; // %
-export const CHART_WIND_DIRECTION_WINDOW_Y =
-    (100 - CHART_WIND_DIRECTION_WINDOW_HEIGHT) / 2; // %
+/**
+ * Height of the flyable wind direction range in relation to 360°, percents
+ */
+export const RELATIVE_HEIGHT_OF_FLYABLE_WIND_DIRECTION_RANGE =
+    (FLYABLE_WIND_DIRECTION_RANGE / 360) * 100;
+/**
+ * `y` axis position of the flyable wind direction range in relation to 360°, percents
+ */
+export const RELATIVE_FLYABLE_WIND_DIRECTION_RANGE_Y =
+    (100 - RELATIVE_HEIGHT_OF_FLYABLE_WIND_DIRECTION_RANGE) / 2;
 
 export const CHART_WIND_SPEED_RANGE_KMH = {
     start: 0,
@@ -122,7 +136,7 @@ export const getYDirectionLabels = (): YLabels => {
 
     const pixelsPerDegree = CHART_HEIGHT / 360;
 
-    let degreesFromTopToZero = 180 - WIND_DIRECTION_WINDOW_CENTER;
+    let degreesFromTopToZero = 180 - MEDIAN_FLYABLE_WIND_DIRECTION;
     degreesFromTopToZero =
         degreesFromTopToZero < 0
             ? degreesFromTopToZero + 360

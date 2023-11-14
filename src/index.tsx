@@ -1,9 +1,17 @@
 import { render } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
-import { WindSpeed } from './WindSpeed';
-import logoImgUrl from './assets/SPHGC.png';
+import {
+    MutableRef,
+    StateUpdater,
+    useEffect,
+    useRef,
+    useState,
+} from 'preact/hooks';
+import { Header } from './Header/Header';
+import { Latest } from './Latest/Latest';
+import { WindCharts } from './WindCharts/WindCharts';
 import DataManager from './data/dataManager';
 import './style.css';
+import { useDocumentVisible } from './utils/useDocumentVisible';
 
 const HOBO_WEBSOCKET_URL =
     'wss://api-onset-prod.scriptrapps.io//RThGMDEzNDc3NA==';
@@ -62,45 +70,65 @@ export interface StationData {
 //     setStationData(stationData);
 // };
 
+const onStationDataRecieved = (
+    data: number[][],
+    isDocumentVisible: boolean,
+    setStationData: StateUpdater<StationData[]>,
+    timeout: MutableRef<number>,
+    dm: DataManager
+) => {
+    console.dir(data);
+    const stationData: StationData[] = data.map((entry: number[]) => {
+        return {
+            timestamp: entry[STATION_DATA.TIMESTAMP],
+            wind: entry[STATION_DATA.WIND],
+            gust: entry[STATION_DATA.GUST],
+            direction: entry[STATION_DATA.DIRECTION],
+        };
+    });
+    setStationData(stationData);
+    if (timeout.current !== undefined) {
+        clearTimeout(timeout.current);
+    }
+    // Request new station data only if current browser tab is active.
+    // This results in saving battery for mobile devices, less data usage,
+    // and less requests to the server.
+    if (isDocumentVisible) {
+        timeout.current = setTimeout(() => {
+            const now = Date.now();
+            dm.RequestTSData(
+                'ts-all',
+                [
+                    dm.Streams.WindSpeed,
+                    dm.Streams.GustSpeed,
+                    dm.Streams.WindDirection,
+                ],
+                now - CHART_DATA_INTERVAL,
+                now
+            );
+        }, STATION_REQUEST_INTERVAL);
+    }
+};
+
 export function App() {
     const [stationData, setStationData] = useState<StationData[]>([]);
-    const timeoutId = useRef<number>();
+    const timeout = useRef<number>();
+    const isDocumentVisible = useDocumentVisible();
 
     useEffect(() => {
-        function ErrorHandler(event) {
+        function ErrorHandler(event: string) {
             console.log('ErrorHandler: Received error event= ' + event);
         }
         function TSDataUpdater(data: number[][]) {
-            console.dir(data);
-            const stationData: StationData[] = data.map((entry: number[]) => {
-                return {
-                    timestamp: entry[STATION_DATA.TIMESTAMP],
-                    wind: entry[STATION_DATA.WIND],
-                    gust: entry[STATION_DATA.GUST],
-                    direction: entry[STATION_DATA.DIRECTION],
-                };
-            });
-            setStationData(stationData);
-            if (timeoutId.current !== undefined) {
-                clearTimeout(timeoutId.current);
-            }
-            requestAnimationFrame(() => {
-                timeoutId.current = setTimeout(() => {
-                    const now = Date.now();
-                    dm.RequestTSData(
-                        'ts-all',
-                        [
-                            dm.Streams.WindSpeed,
-                            dm.Streams.GustSpeed,
-                            dm.Streams.WindDirection,
-                        ],
-                        now - CHART_DATA_INTERVAL,
-                        now
-                    );
-                }, STATION_REQUEST_INTERVAL);
-            });
+            onStationDataRecieved(
+                data,
+                isDocumentVisible,
+                setStationData,
+                timeout,
+                dm
+            );
         }
-        function LiveDataUpdater(data) {
+        function LiveDataUpdater(data: any) {
             console.dir(data);
         }
         console.log('Starting WSS connection');
@@ -128,27 +156,29 @@ export function App() {
             // dm.RequestLatestData('latest-ws', dm.Streams.WindSpeed);
         };
         return () => {
+            if (timeout.current !== undefined) {
+                clearTimeout(timeout.current);
+            }
             console.log('Closing WSS connection');
             ws.close();
         };
 
         // useMockStationData(setStationData);
-    }, []);
+    }, [isDocumentVisible]);
 
     return (
         <>
-            <header>
-                <h1>Long Reef weather station</h1>
-                <a href="https://www.flysydney.com.au/" class="logo">
-                    <img
-                        src={logoImgUrl}
-                        alt="SPHGC logo"
-                        height="50"
-                        width="50"
+            <Header />
+            {stationData.length > 0 ? (
+                <>
+                    <Latest
+                        latestDataEntry={stationData[stationData.length - 1]}
                     />
-                </a>
-            </header>
-            <WindSpeed stationData={stationData} />
+                    <WindCharts stationData={stationData} />
+                </>
+            ) : (
+                <>Loading...</>
+            )}
         </>
     );
 }

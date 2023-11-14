@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'preact/hooks';
-import { StationData } from '.';
 import {
     formatDateTime,
     formatToOneGuaranteedDecimalPlace,
     kmhToKnots,
-} from './utils';
+} from '../utils/utils';
+import { StationData } from '..';
 
 export const Latest = ({
     latestDataEntry,
@@ -14,13 +14,9 @@ export const Latest = ({
     const [sinceLatestData, setSinceLatestData] = useState<number>(0);
 
     useEffect(() => {
-        if (latestDataEntry) {
-            setSinceLatestData(Date.now() - latestDataEntry.timestamp);
-        }
+        setSinceLatestData(Date.now() - latestDataEntry.timestamp);
         const intervalId = setInterval(() => {
-            if (latestDataEntry) {
-                setSinceLatestData(Date.now() - latestDataEntry.timestamp);
-            }
+            setSinceLatestData(Date.now() - latestDataEntry.timestamp);
         }, 3000);
 
         return () => {
@@ -28,7 +24,7 @@ export const Latest = ({
         };
     }, [latestDataEntry, setSinceLatestData]);
 
-    return latestDataEntry ? (
+    return (
         <div class="latest">
             <div class="title">
                 {formatDateTime(latestDataEntry.timestamp)}
@@ -86,5 +82,5 @@ export const Latest = ({
                 </div>
             </div>
         </div>
-    ) : null;
+    );
 };

@@ -1,5 +1,5 @@
-import { TimeRange } from './chartData';
-import { formatTimeHHMM, getLabelsInterval } from './utils';
+import { TimeRange } from '../chartsData';
+import { formatTimeHHMM, getLabelsInterval } from '../../utils/utils';
 
 const X_AXIS_INTERVALS: number[] = [3600, 1800, 900, 600, 300, 30, 15];
 const MIN_X_LABELS_COUNT = 1;
