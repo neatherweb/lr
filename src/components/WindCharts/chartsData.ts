@@ -1,12 +1,12 @@
-import { CHART_DATA_INTERVAL, StationData } from '..';
-import { XLabels, getXLabels } from './Labels/xLabels';
+import { CHART_DATA_INTERVAL, type StationData } from '@/App.vue';
+import { getXLabels, type XLabels } from './Labels/xLabels';
 import {
     CHART_HEIGHT,
     CHART_WIND_SPEED_RANGE_KMH,
     MEDIAN_FLYABLE_WIND_DIRECTION,
-    YLabels,
     getYDirectionLabels,
     getYLabels,
+    type YLabels,
 } from './Labels/yLabels';
 
 export interface TimeRange {
@@ -68,7 +68,7 @@ export const getChartsData = (
     );
     let windSpeedXYPoints = '';
     let gustSpeedXYPoints = '';
-    const windDirectionXYPoints = [];
+    const windDirectionXYPoints: [number, number][] = [];
     let i = chartTimeRange.start;
     while (i <= chartTimeRange.end) {
         const entry = stationData.find((entry) => entry.timestamp === i);

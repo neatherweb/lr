@@ -1,19 +1,11 @@
 {
-    "compilerOptions": {
-        "target": "ESNExt",
-        "module": "ESNext",
-        "moduleResolution": "bundler",
-        "noEmit": true,
-        "allowJs": false,
-
-        /* Preact Config */
-        "jsx": "react-jsx",
-        "jsxImportSource": "preact",
-        "skipLibCheck": true,
-        "paths": {
-            "react": ["./node_modules/preact/compat/"],
-            "react-dom": ["./node_modules/preact/compat/"]
+    "files": [],
+    "references": [
+        {
+            "path": "./tsconfig.node.json"
+        },
+        {
+            "path": "./tsconfig.app.json"
         }
-    },
-    "include": ["node_modules/vite/client.d.ts", "**/*"]
+    ]
 }

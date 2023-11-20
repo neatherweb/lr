@@ -7,4 +7,6 @@ export const STATION = {
     },
     /** Station time zone name in IANA format https://data.iana.org/time-zones */
     TIMEZONE: 'Australia/Sydney',
+    /** URL of the station data's `WebSocket` endpoint */
+    HOBO_WEBSOCKET_URL: 'wss://api-onset-prod.scriptrapps.io//RThGMDEzNDc3NA==',
 };

@@ -1,5 +1,5 @@
-import { STATION } from '../../station';
-import { getLabelsInterval } from '../../utils/utils';
+import { STATION } from '@/station';
+import { getLabelsInterval } from '@/utils/utils';
 
 const Y_AXIS_INTERVALS: number[] = [10, 5, 1];
 const MIN_Y_LABELS_COUNT = 1;

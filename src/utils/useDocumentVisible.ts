@@ -1,22 +1,25 @@
-import { useState, useEffect } from 'preact/hooks';
+import { onMounted, onUnmounted, ref, type Ref } from 'vue';
 
-export const useDocumentVisible = () => {
-    const [documentVisible, setDocumentVisible] = useState(
-        document.visibilityState
-    );
+export const useDocumentVisible = (): Ref<boolean> => {
+    const isDocumentVisible = ref(document.visibilityState === 'visible');
 
-    useEffect(() => {
-        const handleVisibilityChange = () =>
-            setDocumentVisible(document.visibilityState);
+    const handleVisibilityChange = () =>
+        (isDocumentVisible.value = document.visibilityState === 'visible');
 
-        document.addEventListener('visibilitychange', handleVisibilityChange);
+    onMounted(() => {
+        document.addEventListener(
+            'visibilitychange',
+            handleVisibilityChange,
+            false
+        );
+    });
 
-        return () =>
-            document.removeEventListener(
-                'visibilitychange',
-                handleVisibilityChange
-            );
-    }, [document]);
+    onUnmounted(() => {
+        document.removeEventListener(
+            'visibilitychange',
+            handleVisibilityChange
+        );
+    });
 
-    return documentVisible === 'visible';
+    return isDocumentVisible;
 };
