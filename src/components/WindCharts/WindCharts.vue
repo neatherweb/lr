@@ -7,9 +7,7 @@ export const Y_AXIS_WIDTH = 30;
 
 <script setup lang="ts">
 import { STATION } from '@/station';
-import { useChartsStore } from '@/stores/chartsStore';
-import { useDocumentVisible } from '@/utils/useDocumentVisible';
-import { onUnmounted, ref, watch } from 'vue';
+import { onUnmounted } from 'vue';
 import { useUnitStore } from '../../stores/unitStore';
 import { getWindSpeedColor } from '../../utils/windSpeedColors';
 import ChartIntervalSelector from '../ChartIntervalSelector.vue';
@@ -22,11 +20,12 @@ import XAxis from './XAxis.vue';
 import YAxis from './YAxis.vue';
 import { type ChartsData } from './chartsData';
 
-const props = defineProps<{
+// const props = defineProps<{
+defineProps<{
     chartsData: ChartsData;
 }>();
 
-const CHART_REFRESH_INTERVAL = 3000; // ms
+// const CHART_REFRESH_INTERVAL = 3000; // ms
 const RELATIVE_HEIGHT_OF_BORDERLINE_WIND_DIRECTION_RANGE =
     ((STATION.BORDERLINE_WIND_DIRECTIONS.MAX -
         STATION.BORDERLINE_WIND_DIRECTIONS.MIN) /
@@ -35,7 +34,7 @@ const RELATIVE_HEIGHT_OF_BORDERLINE_WIND_DIRECTION_RANGE =
 const RELATIVE_BORDERLINE_WIND_DIRECTION_RANGE_Y =
     (100 - RELATIVE_HEIGHT_OF_BORDERLINE_WIND_DIRECTION_RANGE) / 2;
 
-const isDocumentVisible = useDocumentVisible();
+// const isDocumentVisible = useDocumentVisible();
 const unitStore = useUnitStore();
 
 let intervalId: number | undefined = undefined;

@@ -18,7 +18,7 @@ function computeArcPath(
 
 <script setup lang="ts">
 import { STATION } from '@/station';
-import { useUnitStore, type UNIT } from '@/stores/unitStore';
+import { useUnitStore } from '@/stores/unitStore';
 import { ref } from 'vue';
 import { formatToOneGuaranteedDecimalPlace, kmhToKnots } from '../utils/utils';
 import { getWindSpeedColor } from '../utils/windSpeedColors';
