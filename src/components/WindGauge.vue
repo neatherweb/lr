@@ -126,20 +126,25 @@ const greenzonearc = ref(
         <div
             class="windIndicator"
             :style="{
-                height: inner_radius * 2 + 'px',
+                height: `${inner_radius * 2 - 3}px`,
                 transform: `rotate(${props.windDirection}deg)`,
-                color: getWindSpeedColor(props.windSpeed),
             }"
         >
-            ⬇
+            <svg width="24" height="24" viewBox="1.3299 1.0038 52 68.11">
+                <path
+                    d="M 218.45 301.246 H 252.543 L 250.054 283.746 L 286.56 309.746 L 250.054 335.746 L 252.543 318.246 H 218.45 V 301.246 Z"
+                    :fill="getWindSpeedColor(props.windSpeed)"
+                    transform="matrix(0, 1, -1, 0, 337.07589721679693, -217.4461669921875)"
+                />
+            </svg>
         </div>
         <div class="info">
             <div class="i">i</div>
             <span class="tooltiptext"
                 >The outer arc shows green for flyable direction, amber for
                 border-line. The direction indicator points to current wind
-                direction (changing color for wind speed). Wind direction, speed
-                and gust are shown in the inner gauge.</span
+                direction (changing color for wind speed). Gust speed, wind
+                speed and wind direction are shown in the inner gauge.</span
             >
         </div>
     </div>
@@ -162,7 +167,7 @@ const greenzonearc = ref(
 .info {
     position: absolute;
     top: 0;
-    right: 0;
+    left: 0;
 }
 .i {
     width: 1.5rem;
@@ -186,7 +191,7 @@ const greenzonearc = ref(
 
     /* Position the tooltip */
     position: absolute;
-    right: 0;
+    left: 0;
     z-index: 1;
 }
 
@@ -221,6 +226,7 @@ const greenzonearc = ref(
 .legend {
     grid-area: gauge;
     text-align: center;
+    margin: 5px 0 0 2px;
 }
 
 .gustSpeed {
@@ -247,7 +253,5 @@ const greenzonearc = ref(
     grid-area: gauge;
     text-align: center;
     vertical-align: top;
-    font-size: 1.6rem;
-    line-height: 1.5rem;
 }
 </style>

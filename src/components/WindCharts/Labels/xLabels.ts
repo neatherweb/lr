@@ -18,8 +18,8 @@ export const getXLabels = (
 
     const range = (chartTimeRange.end - chartTimeRange.start) / 1000;
 
-    const labelWidth = 28; // TODO: make it better
-    const padding = labelWidth / 3;
+    const labelWidth = 30; // TODO: make it better
+    const padding = labelWidth / 5;
     const maxLabelsCount = Math.round((width + padding) / labelWidth);
 
     const interval =
@@ -42,7 +42,8 @@ export const getXLabels = (
         }
     }
 
-    const pixelsForMs = width / (chartTimeRange.end - chartTimeRange.start);
+    const pixelsForMs =
+        (width + padding) / (chartTimeRange.end - chartTimeRange.start);
 
     let label = formatTimeHHMM(labelShouldBeAddedBy);
 
@@ -52,7 +53,7 @@ export const getXLabels = (
     );
 
     while (xCoordinate <= width + padding - labelWidth) {
-        if (xCoordinate > 0) {
+        if (xCoordinate > -5) {
             labels.push(label);
             x.push(xCoordinate);
         }

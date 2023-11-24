@@ -4,6 +4,7 @@ import { STATION } from '@/station';
 import { useDocumentVisible } from '@/utils/useDocumentVisible';
 import { useElementWidth } from '@/utils/useElementWidth';
 import { onUnmounted, ref, watch } from 'vue';
+import { useUnitStore } from '../../stores/unitStore';
 import { getWindSpeedColor } from '../../utils/windSpeedColors';
 import {
     CHART_HEIGHT,
@@ -31,6 +32,7 @@ const windSpeedWrapperRef = ref<HTMLDivElement>();
 const chartWidth = useElementWidth(windSpeedWrapperRef);
 const chartsData = ref<ChartsData | undefined>();
 const isDocumentVisible = useDocumentVisible();
+const unitStore = useUnitStore();
 
 let intervalId: number | undefined = undefined;
 watch(
@@ -60,8 +62,7 @@ onUnmounted(() => {
 
 <template>
     <div class="speedChart">
-        <div class="title-kmh">km/h</div>
-        <div class="title-kt">kt</div>
+        <div class="title">{{ unitStore.unit }}</div>
         <div ref="windSpeedWrapperRef" class="chart">
             <svg
                 v-if="chartsData && chartsData.windSpeedXYPoints.length > 0"
@@ -91,8 +92,14 @@ onUnmounted(() => {
         </div>
         <template v-if="chartsData !== undefined">
             <XAxis :xLabels="chartsData.timeLabels" />
-            <YAxis :yLabels="chartsData.kmhLabels" className="kmhaxis" />
-            <YAxis :yLabels="chartsData.ktLabels" className="ktaxis" />
+            <YAxis
+                v-if="unitStore.unit === 'kmh'"
+                :yLabels="chartsData.kmhLabels"
+            />
+            <YAxis
+                v-if="unitStore.unit === 'kt'"
+                :yLabels="chartsData.ktLabels"
+            />
         </template>
     </div>
     <div
@@ -134,38 +141,31 @@ onUnmounted(() => {
 <style scoped>
 .speedChart {
     display: grid;
-    grid-template-columns: auto 1.7em 1.7em;
-    grid-template-rows: min-content 150px 1.5em;
+    grid-template-columns: auto 1.7em;
+    grid-template-rows: min-content 160px 1.5em;
     grid-template-areas:
-        'a      title-kmh  title-kt'
-        'chart  kmh        knots'
-        'time   b          b';
+        'a      title'
+        'chart  speed'
+        'time   b';
+    margin: -0.3rem 0 0 0;
 }
 
 .chart {
     grid-area: chart;
 }
 
-.speedChart .title-kmh,
-.speedChart .title-kt {
+.speedChart .title {
     padding: 0 0 0.3em 0;
     font-size: 0.6em;
     color: #696969;
     text-align: center;
-}
-
-.speedChart .title-kmh {
-    grid-area: title-kmh;
-}
-
-.speedChart .title-kt {
-    grid-area: title-kt;
+    grid-area: title;
 }
 
 .directionChart {
     display: grid;
-    grid-template-columns: auto 3.3em;
-    grid-template-rows: 150px;
+    grid-template-columns: auto 1.7em;
+    grid-template-rows: 160px;
     grid-template-areas: 'chart diraxis';
 }
 

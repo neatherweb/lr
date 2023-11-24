@@ -1,7 +1,7 @@
 import { STATION } from '@/station';
 import { getLabelsInterval } from '@/utils/utils';
 
-const Y_AXIS_INTERVALS: number[] = [10, 5, 1];
+const Y_AXIS_INTERVALS: number[] = [10, 5, 2, 1];
 const MIN_Y_LABELS_COUNT = 1;
 const MAX_Y_LABELS_COUNT = 10;
 const Y_LABEL_HEIGHT = 16;
@@ -19,9 +19,9 @@ export const MEDIAN_FLYABLE_WIND_DIRECTION =
     STATION.FLYABLE_WIND_DIRECTIONS.MIN + FLYABLE_WIND_DIRECTION_RANGE / 2;
 
 /**
- * Chart component height, pixels
+ * Chart components height, pixels
  */
-export const CHART_HEIGHT = 150;
+export const CHART_HEIGHT = 160;
 
 /**
  * Height of the flyable wind direction range in relation to 360°, percents

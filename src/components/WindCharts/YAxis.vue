@@ -7,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-    <div>
+    <div class="speed">
         <div
             v-for="(label, i) in yLabels.labels"
             class="ylabel"
@@ -22,8 +22,8 @@ defineProps<{
 </template>
 
 <style>
-.kmhaxis {
-    grid-area: kmh;
+.speed {
+    grid-area: speed;
     height: 100%;
     border-left: 1px solid #cecece;
     position: relative;
@@ -39,8 +39,7 @@ defineProps<{
     margin: -0.6em 0 0 0;
 }
 
-.kmhaxis .ylabel,
-.ktaxis .ylabel {
+.speed .ylabel {
     margin: -2.1em 0 0 0;
 }
 
@@ -50,12 +49,6 @@ defineProps<{
     height: 0.3em;
     border-top: 1px solid #cecece;
     margin: 0 1px 0 0;
-}
-
-.ktaxis {
-    grid-area: knots;
-    height: 100%;
-    position: relative;
 }
 
 .diraxis {
