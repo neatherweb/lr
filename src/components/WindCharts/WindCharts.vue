@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { StationData } from '@/App.vue';
+import { STATION } from '@/station';
 import { useDocumentVisible } from '@/utils/useDocumentVisible';
 import { useElementWidth } from '@/utils/useElementWidth';
 import { onUnmounted, ref, watch } from 'vue';
+import { getWindSpeedColor } from '../../utils/windSpeedColors';
 import {
     CHART_HEIGHT,
     RELATIVE_FLYABLE_WIND_DIRECTION_RANGE_Y,
@@ -17,6 +19,13 @@ const props = defineProps<{
 }>();
 
 const CHART_REFRESH_INTERVAL = 3000; // ms
+const RELATIVE_HEIGHT_OF_BORDERLINE_WIND_DIRECTION_RANGE =
+    ((STATION.BORDERLINE_WIND_DIRECTIONS.MAX -
+        STATION.BORDERLINE_WIND_DIRECTIONS.MIN) /
+        360) *
+    100;
+const RELATIVE_BORDERLINE_WIND_DIRECTION_RANGE_Y =
+    (100 - RELATIVE_HEIGHT_OF_BORDERLINE_WIND_DIRECTION_RANGE) / 2;
 
 const windSpeedWrapperRef = ref<HTMLDivElement>();
 const chartWidth = useElementWidth(windSpeedWrapperRef);
@@ -34,7 +43,7 @@ watch(
         // This results in saving battery for mobile devices.
         if (isDocumentVisible && chartWidth > 0) {
             chartsData.value = getChartsData(props.stationData, chartWidth);
-            intervalId = setInterval(() => {
+            intervalId = window.setInterval(() => {
                 chartsData.value = getChartsData(props.stationData, chartWidth);
             }, CHART_REFRESH_INTERVAL);
         }
@@ -62,27 +71,12 @@ onUnmounted(() => {
                 <polyline
                     key="gust"
                     fill="none"
-                    stroke="#9aed8b"
+                    stroke="#d8d8d8"
                     stroke-width="3"
                     :points="`0,${chartsData.gustSpeedXYPoints.substring(
                         chartsData.gustSpeedXYPoints.indexOf(',') + 1,
                         chartsData.gustSpeedXYPoints.indexOf(' ')
                     )} ${chartsData.gustSpeedXYPoints}`"
-                />
-                <polygon
-                    key="wind"
-                    fill="#2fa2b7"
-                    fill-opacity="0.2"
-                    stroke="none"
-                    :points="`0,${CHART_HEIGHT} 0,${chartsData.windSpeedXYPoints.substring(
-                        chartsData.windSpeedXYPoints.indexOf(',') + 1,
-                        chartsData.windSpeedXYPoints.indexOf(' ')
-                    )} ${
-                        chartsData.windSpeedXYPoints
-                    } ${chartsData.windSpeedXYPoints.substring(
-                        chartsData.windSpeedXYPoints.lastIndexOf(' '),
-                        chartsData.windSpeedXYPoints.lastIndexOf(',')
-                    )},${CHART_HEIGHT}`"
                 />
                 <polyline
                     fill="none"
@@ -110,18 +104,26 @@ onUnmounted(() => {
                 <rect
                     width="100%"
                     :height="
+                        RELATIVE_HEIGHT_OF_BORDERLINE_WIND_DIRECTION_RANGE + '%'
+                    "
+                    :y="RELATIVE_BORDERLINE_WIND_DIRECTION_RANGE_Y + '%'"
+                    fill="rgba(255, 202, 97, 0.35)"
+                />
+                <rect
+                    width="100%"
+                    :height="
                         RELATIVE_HEIGHT_OF_FLYABLE_WIND_DIRECTION_RANGE + '%'
                     "
                     :y="RELATIVE_FLYABLE_WIND_DIRECTION_RANGE_Y + '%'"
-                    fill="rgba(155, 237, 140, 0.5)"
+                    fill="#c7f0bf"
                 />
 
                 <circle
-                    v-for="point in chartsData.windDirectionXYPoints"
+                    v-for="point in chartsData.windDirections"
                     :cx="`${point[0]}px`"
                     :cy="`${point[1]}%`"
+                    :fill="getWindSpeedColor(point[2])"
                     r="4"
-                    fill="#2fa2b7"
                 />
             </svg>
         </div>
@@ -133,7 +135,7 @@ onUnmounted(() => {
 .speedChart {
     display: grid;
     grid-template-columns: auto 1.7em 1.7em;
-    grid-template-rows: min-content 200px 1.5em;
+    grid-template-rows: min-content 150px 1.5em;
     grid-template-areas:
         'a      title-kmh  title-kt'
         'chart  kmh        knots'
@@ -163,7 +165,7 @@ onUnmounted(() => {
 .directionChart {
     display: grid;
     grid-template-columns: auto 3.3em;
-    grid-template-rows: 200px;
+    grid-template-rows: 150px;
     grid-template-areas: 'chart diraxis';
 }
 

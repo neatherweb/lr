@@ -42,7 +42,7 @@ export interface ChartsData {
     timeLabels: XLabels;
     kmhLabels: YLabels;
     ktLabels: YLabels;
-    windDirectionXYPoints: [number, number][];
+    windDirections: [number, number, number][];
     directionLabels: YLabels;
 }
 
@@ -68,7 +68,7 @@ export const getChartsData = (
     );
     let windSpeedXYPoints = '';
     let gustSpeedXYPoints = '';
-    const windDirectionXYPoints: [number, number][] = [];
+    const windDirections: [number, number, number][] = [];
     let i = chartTimeRange.start;
     while (i <= chartTimeRange.end) {
         const entry = stationData.find((entry) => entry.timestamp === i);
@@ -82,7 +82,7 @@ export const getChartsData = (
             const gustY = getChartPoint(relativeGustY, CHART_HEIGHT);
             gustSpeedXYPoints += `${x},${gustY} `;
             const windDirectionY = getWindDirectionY(entry.direction);
-            windDirectionXYPoints.push([x, windDirectionY]);
+            windDirections.push([x, windDirectionY, entry.wind]);
         }
         i += step;
     }
@@ -97,7 +97,7 @@ export const getChartsData = (
         timeLabels,
         kmhLabels,
         ktLabels,
-        windDirectionXYPoints,
+        windDirections,
         directionLabels,
     };
 };

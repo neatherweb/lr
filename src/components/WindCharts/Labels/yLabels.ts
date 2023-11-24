@@ -21,7 +21,7 @@ export const MEDIAN_FLYABLE_WIND_DIRECTION =
 /**
  * Chart component height, pixels
  */
-export const CHART_HEIGHT = 200;
+export const CHART_HEIGHT = 150;
 
 /**
  * Height of the flyable wind direction range in relation to 360°, percents

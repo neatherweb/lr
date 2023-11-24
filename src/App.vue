@@ -13,8 +13,7 @@ export const STATION_REQUEST_INTERVAL = 1000 * 10;
 </script>
 
 <script setup lang="ts">
-import { ref, watch, type Ref, onUnmounted } from 'vue';
-import Header from './components/Header.vue';
+import { onUnmounted, ref, watch, type Ref } from 'vue';
 import Latest from './components/Latest.vue';
 import WindCharts from './components/WindCharts/WindCharts.vue';
 import DataManager from './data/dataManager';
@@ -35,7 +34,7 @@ const onStationDataRecieved = (
     data: number[][],
     isDocumentVisible: boolean,
     stationData: Ref<StationData[]>,
-    timeoutId: number | undefined,
+    timeout: Ref<number | undefined>,
     dm: DataManager
 ) => {
     console.dir(data);
@@ -47,14 +46,14 @@ const onStationDataRecieved = (
             direction: entry[HOBO_STATION_DATA.DIRECTION],
         };
     });
-    if (timeoutId !== undefined) {
-        clearTimeout(timeoutId);
+    if (timeout.value !== undefined) {
+        clearTimeout(timeout.value);
     }
     // Request new station data only if current browser tab is active.
     // This results in saving battery for mobile devices, less data usage,
     // and less requests to the server.
     if (isDocumentVisible) {
-        timeoutId = setTimeout(() => {
+        timeout.value = window.setTimeout(() => {
             const now = Date.now();
             // TODO: only request new data here, like:
             // dm.RequestLatestData('latest-ws', dm.Streams.WindSpeed);
@@ -73,7 +72,7 @@ const onStationDataRecieved = (
 };
 
 let ws: WebSocket | undefined;
-let timeoutId: number | undefined = undefined;
+let timeout: Ref<number | undefined> = ref(undefined);
 
 const isDocumentVisible: Ref<boolean> = useDocumentVisible();
 const stationData = ref<StationData[]>([]);
@@ -81,8 +80,8 @@ const stationData = ref<StationData[]>([]);
 watch(
     isDocumentVisible,
     (isDocumentVisible) => {
-        if (timeoutId !== undefined) {
-            clearTimeout(timeoutId);
+        if (timeout.value !== undefined) {
+            clearTimeout(timeout.value);
         }
         if (ws !== undefined) {
             console.log('Closing WSS connection');
@@ -100,7 +99,7 @@ watch(
                     data,
                     isDocumentVisible,
                     stationData,
-                    timeoutId,
+                    timeout,
                     dm
                 );
             }
@@ -139,8 +138,8 @@ watch(
 );
 
 onUnmounted(() => {
-    if (timeoutId !== undefined) {
-        clearTimeout(timeoutId);
+    if (timeout.value !== undefined) {
+        clearTimeout(timeout.value);
     }
     if (ws !== undefined) {
         console.log('Closing WSS connection');
@@ -150,12 +149,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Header />
-    <main>
-        <div v-if="stationData.length === 0">Loading...</div>
-        <template v-else>
-            <Latest :latestDataEntry="stationData[stationData.length - 1]" />
-            <WindCharts :stationData="stationData" />
-        </template>
-    </main>
+    <div v-if="stationData.length === 0">Loading...</div>
+    <template v-else>
+        <Latest :latestDataEntry="stationData[stationData.length - 1]" />
+        <WindCharts :stationData="stationData" />
+    </template>
 </template>

@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import type { StationData } from '@/App.vue';
+import WindGauge from './WindGauge.vue';
 import { useDocumentVisible } from '@/utils/useDocumentVisible';
 import { onUnmounted, ref, watch } from 'vue';
-import {
-    formatDateTime,
-    formatToOneGuaranteedDecimalPlace,
-    kmhToKnots,
-} from '../utils/utils';
+import { formatDateTime } from '../utils/utils';
+import { STATION } from '../station';
 
 const props = defineProps<{
     latestDataEntry: StationData;
@@ -30,7 +28,7 @@ watch(
         if (isDocumentVisible) {
             msSinceLatestDataEntry.value =
                 Date.now() - props.latestDataEntry.timestamp;
-            intervalId = setInterval(() => {
+            intervalId = window.setInterval(() => {
                 {
                     msSinceLatestDataEntry.value =
                         Date.now() - props.latestDataEntry.timestamp;
@@ -49,109 +47,87 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="latest">
-        <div class="title">
-            Latest weather as of:
-            {{ formatDateTime(latestDataEntry.timestamp) }}
-            <div v-if="msSinceLatestDataEntry >= MINUTE">
-                {{ Math.floor(msSinceLatestDataEntry / MINUTE) }} min ago
-            </div>
-        </div>
-        <div class="wind">
-            <div>
-                <span class="unit">gust:</span>{{ ' ' }}
-                <span class="value">
-                    {{
-                        formatToOneGuaranteedDecimalPlace(latestDataEntry.gust)
-                    }} </span
-                >{{ ' ' }} <span class="unit">km/h</span>{{ ' ' }}
-                <span class="value">
-                    {{
-                        formatToOneGuaranteedDecimalPlace(
-                            kmhToKnots(latestDataEntry.gust)
-                        )
-                    }} </span
-                >{{ ' ' }}
-                <span class="unit">kt</span>
-            </div>
-            <div>
-                <span class="unit">wind:</span>{{ ' ' }}
-                <span class="value">
-                    {{
-                        formatToOneGuaranteedDecimalPlace(latestDataEntry.wind)
-                    }} </span
-                >{{ ' ' }} <span class="unit">km/h</span>{{ ' ' }}
-                <span class="value">
-                    {{
-                        formatToOneGuaranteedDecimalPlace(
-                            kmhToKnots(latestDataEntry.wind)
-                        )
-                    }} </span
-                >{{ ' ' }}
-                <span class="unit">kt</span>
-            </div>
-        </div>
-        <div class="direction">
-            <svg viewBox="0 0 48 48" width="48" height="48" class="circle">
-                <path
-                    id="arc"
-                    fill="#9aed8b"
-                    stroke="none"
-                    fill-rule="evenodd"
-                    d="M 46.82535639108369 16.58359213500126 A 24 24 0 0 0 32.99055824198189 1.7475874903971018 L 24 24 Z M 39.21690426072246 19.05572809000084 A 16 16 0 0 0 29.99370549465459 9.165058326931401 L 24 24 Z"
-                ></path>
-            </svg>
-            <div
-                class="arrow"
-                style="transform: rotate({{latestDataEntry.direction}}deg);"
+    <header>
+        <h1>{{ STATION.NAME }} weather station</h1>
+        <div class="latest">
+            <span v-if="msSinceLatestDataEntry >= MINUTE" class="latestUpdate">
+                {{ Math.floor(msSinceLatestDataEntry / MINUTE) }} min ago,</span
             >
-                ↓
-            </div>
+            at {{ formatDateTime(latestDataEntry.timestamp) }}:
         </div>
-    </div>
+        <a href="https://www.flysydney.com.au/" class="logo">
+            <img
+                src="../assets/SPHGC.png"
+                alt="SPHGC logo"
+                height="50"
+                width="50"
+            />
+        </a>
+    </header>
+    <WindGauge
+        :size="160"
+        :windSpeed="latestDataEntry.wind"
+        :gustSpeed="latestDataEntry.gust"
+        :windDirection="latestDataEntry.direction"
+    ></WindGauge>
 </template>
 
 <style scoped>
-.latest {
-    display: flex;
-    align-items: flex-start;
-    margin: 0 0 0.8em 0;
-    color: #696969;
+header {
+    display: grid;
+    margin: 0 0 0.6em 0;
+    grid-template-areas:
+        'title logo'
+        'latest logo';
+    grid-template-columns: auto min-content;
+    align-items: center;
 }
 
-.latest .title {
-    flex: 1;
-}
-
-.latest .wind {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    font-size: 0.9em;
-    text-align: right;
-    padding: 0 0.8em 0 0;
-}
-
-.latest .value {
+h1 {
+    grid-area: title;
+    font-size: 1.2em;
     font-weight: bold;
+    margin: 0;
 }
 
-.latest .unit {
-    font-size: 0.8rem;
-}
-
-.latest .direction {
-    position: relative;
+.logo {
+    grid-area: logo;
+    display: block;
+    width: 50px;
     height: 50px;
 }
 
-.latest .circle {
+.latest {
+    grid-area: latest;
+    color: #696969;
+    font-size: 0.9rem;
+}
+
+.latestUpdate {
+    font-weight: bold;
+}
+
+.value {
+    font-weight: bold;
+}
+
+.unit {
+    font-size: 0.8rem;
+}
+
+.direction {
+    position: relative;
+    width: 50px;
+    height: 50px;
+}
+
+.circle {
     box-sizing: border-box;
     border: 1px solid #cecece;
     border-radius: 50%;
 }
 
-.latest .arrow {
+.arrow {
     position: absolute;
     top: 0;
     left: 0;

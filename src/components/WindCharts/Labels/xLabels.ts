@@ -18,8 +18,9 @@ export const getXLabels = (
 
     const range = (chartTimeRange.end - chartTimeRange.start) / 1000;
 
-    const labelWidth = 38; // TODO: make it better
-    const maxLabelsCount = Math.round(width / labelWidth);
+    const labelWidth = 28; // TODO: make it better
+    const padding = labelWidth / 3;
+    const maxLabelsCount = Math.round((width + padding) / labelWidth);
 
     const interval =
         getLabelsInterval(
@@ -50,7 +51,7 @@ export const getXLabels = (
             labelWidth / 2
     );
 
-    while (xCoordinate <= width - labelWidth) {
+    while (xCoordinate <= width + padding - labelWidth) {
         if (xCoordinate > 0) {
             labels.push(label);
             x.push(xCoordinate);
