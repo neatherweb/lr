@@ -1,11 +1,23 @@
 {
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    },
-    {
-      "path": "./tsconfig.app.json"
+    "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+    "compilerOptions": {
+        "composite": true,
+        "baseUrl": ".",
+        "allowJs": false,
+        "lib": ["esnext", "DOM", "DOM.Iterable"],
+        "module": "esnext",
+        "moduleResolution": "bundler",
+        "noEmit": true,
+        "paths": {
+            "@/*": ["./src/*"]
+        },
+        "target": "esnext",
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+
+        // Required in Vue projects
+        "jsx": "preserve",
+        "jsxImportSource": "vue"
     }
-  ]
 }
