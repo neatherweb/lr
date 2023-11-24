@@ -22,7 +22,7 @@ import { useUnitStore, type UNIT } from '@/stores/unitStore';
 import { ref } from 'vue';
 import { formatToOneGuaranteedDecimalPlace, kmhToKnots } from '../utils/utils';
 import { getWindSpeedColor } from '../utils/windSpeedColors';
-import Units from './Units.vue';
+import WindSpeedUnitSelector from './WindSpeedUnitSelector.vue';
 
 const props = defineProps<{
     size: number;
@@ -37,13 +37,13 @@ const windSpeed = ref(0);
 const gustSpeed = ref(0);
 
 unitStore.$subscribe(
-    (mutation: any, state: { unit: UNIT }) => {
+    () => {
         windSpeed.value =
-            state.unit === 'kmh'
+            unitStore.unit === 'kmh'
                 ? props.windSpeed
                 : kmhToKnots(props.windSpeed);
         gustSpeed.value =
-            state.unit === 'kmh'
+            unitStore.unit === 'kmh'
                 ? props.gustSpeed
                 : kmhToKnots(props.gustSpeed);
     },
@@ -80,7 +80,7 @@ const greenzonearc = ref(
 
 <template>
     <div class="windgauge">
-        <Units />
+        <WindSpeedUnitSelector />
         <span class="direction north">N</span>
         <span class="direction east">E</span>
         <span class="direction south">S</span>

@@ -1,11 +1,18 @@
+<script lang="ts">
+/**
+ * Width of the `y` axis of the chart, pixels
+ */
+export const Y_AXIS_WIDTH = 30;
+</script>
+
 <script setup lang="ts">
-import type { StationData } from '@/App.vue';
 import { STATION } from '@/station';
+import { useChartsStore } from '@/stores/chartsStore';
 import { useDocumentVisible } from '@/utils/useDocumentVisible';
-import { useElementWidth } from '@/utils/useElementWidth';
 import { onUnmounted, ref, watch } from 'vue';
 import { useUnitStore } from '../../stores/unitStore';
 import { getWindSpeedColor } from '../../utils/windSpeedColors';
+import ChartIntervalSelector from '../ChartIntervalSelector.vue';
 import {
     CHART_HEIGHT,
     RELATIVE_FLYABLE_WIND_DIRECTION_RANGE_Y,
@@ -13,10 +20,10 @@ import {
 } from './Labels/yLabels';
 import XAxis from './XAxis.vue';
 import YAxis from './YAxis.vue';
-import { getChartsData, type ChartsData } from './chartsData';
+import { type ChartsData } from './chartsData';
 
 const props = defineProps<{
-    stationData: StationData[];
+    chartsData: ChartsData;
 }>();
 
 const CHART_REFRESH_INTERVAL = 3000; // ms
@@ -28,30 +35,32 @@ const RELATIVE_HEIGHT_OF_BORDERLINE_WIND_DIRECTION_RANGE =
 const RELATIVE_BORDERLINE_WIND_DIRECTION_RANGE_Y =
     (100 - RELATIVE_HEIGHT_OF_BORDERLINE_WIND_DIRECTION_RANGE) / 2;
 
-const windSpeedWrapperRef = ref<HTMLDivElement>();
-const chartWidth = useElementWidth(windSpeedWrapperRef);
-const chartsData = ref<ChartsData | undefined>();
 const isDocumentVisible = useDocumentVisible();
 const unitStore = useUnitStore();
 
 let intervalId: number | undefined = undefined;
-watch(
-    [isDocumentVisible, chartWidth],
-    ([isDocumentVisible, chartWidth]) => {
-        if (intervalId !== undefined) {
-            clearInterval(intervalId);
-        }
-        // Repaint charts only if current browser tab is active.
-        // This results in saving battery for mobile devices.
-        if (isDocumentVisible && chartWidth > 0) {
-            chartsData.value = getChartsData(props.stationData, chartWidth);
-            intervalId = window.setInterval(() => {
-                chartsData.value = getChartsData(props.stationData, chartWidth);
-            }, CHART_REFRESH_INTERVAL);
-        }
-    },
-    { immediate: true }
-);
+
+// const repaintCharts = (isDocumentVisible: boolean, chartWidth: number) => {
+//     if (intervalId !== undefined) {
+//         clearInterval(intervalId);
+//     }
+//     // Repaint charts only if current browser tab is active.
+//     // This results in saving battery for mobile devices.
+//     if (isDocumentVisible && chartWidth > 0) {
+//         // transform
+//         intervalId = window.setInterval(() => {
+//             // transform
+//         }, CHART_REFRESH_INTERVAL);
+//     }
+// };
+
+// watch(
+//     [isDocumentVisible, chartWidth],
+//     ([isDocumentVisible, chartWidth]) => {
+//         repaintCharts(isDocumentVisible, chartWidth);
+//     },
+//     { immediate: true }
+// );
 
 onUnmounted(() => {
     if (intervalId !== undefined) {
@@ -62,8 +71,9 @@ onUnmounted(() => {
 
 <template>
     <div class="speedChart">
+        <ChartIntervalSelector />
         <div class="title">{{ unitStore.unit }}</div>
-        <div ref="windSpeedWrapperRef" class="chart">
+        <div class="chart">
             <svg
                 v-if="chartsData && chartsData.windSpeedXYPoints.length > 0"
                 width="100%"
@@ -74,19 +84,13 @@ onUnmounted(() => {
                     fill="none"
                     stroke="#d8d8d8"
                     stroke-width="3"
-                    :points="`0,${chartsData.gustSpeedXYPoints.substring(
-                        chartsData.gustSpeedXYPoints.indexOf(',') + 1,
-                        chartsData.gustSpeedXYPoints.indexOf(' ')
-                    )} ${chartsData.gustSpeedXYPoints}`"
+                    :points="chartsData.gustSpeedXYPoints"
                 />
                 <polyline
                     fill="none"
                     stroke="#2fa2b7"
                     stroke-width="3"
-                    :points="`0, ${chartsData.windSpeedXYPoints.substring(
-                        chartsData.windSpeedXYPoints.indexOf(',') + 1,
-                        chartsData.windSpeedXYPoints.indexOf(' ')
-                    )} ${chartsData.windSpeedXYPoints}`"
+                    :points="chartsData.windSpeedXYPoints"
                 />
             </svg>
         </div>
@@ -141,13 +145,14 @@ onUnmounted(() => {
 <style scoped>
 .speedChart {
     display: grid;
-    grid-template-columns: auto 1.7em;
+    grid-template-columns: auto 30px;
     grid-template-rows: min-content 160px 1.5em;
     grid-template-areas:
         'a      title'
         'chart  speed'
         'time   b';
     margin: -0.3rem 0 0 0;
+    position: relative;
 }
 
 .chart {
@@ -164,7 +169,7 @@ onUnmounted(() => {
 
 .directionChart {
     display: grid;
-    grid-template-columns: auto 1.7em;
+    grid-template-columns: auto 30px;
     grid-template-rows: 160px;
     grid-template-areas: 'chart diraxis';
 }

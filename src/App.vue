@@ -8,17 +8,22 @@ export interface StationData {
     /** Wind direction, degrees */
     direction: number;
 }
-export const CHART_DATA_INTERVAL = 1000 * 3600 * 2; // 2h
 export const STATION_REQUEST_INTERVAL = 1000 * 10;
 </script>
 
 <script setup lang="ts">
+import { computed } from '@vue/reactivity';
 import { onUnmounted, ref, watch, type Ref } from 'vue';
 import Latest from './components/Latest.vue';
-import WindCharts from './components/WindCharts/WindCharts.vue';
+import WindCharts, {
+    Y_AXIS_WIDTH,
+} from './components/WindCharts/WindCharts.vue';
+import { getChartsData } from './components/WindCharts/chartsData';
 import DataManager from './data/dataManager';
 import { STATION } from './station';
+import { useChartsStore } from './stores/chartsStore';
 import { useDocumentVisible } from './utils/useDocumentVisible';
+import { useElementWidth } from './utils/useElementWidth';
 
 /**
  * HOBO's `WebSocket` data format
@@ -30,6 +35,9 @@ enum HOBO_STATION_DATA {
     DIRECTION,
 }
 
+const chartsStore = useChartsStore();
+let dm: DataManager;
+
 const onStationDataRecieved = (
     data: number[][],
     isDocumentVisible: boolean,
@@ -38,14 +46,24 @@ const onStationDataRecieved = (
     dm: DataManager
 ) => {
     console.dir(data);
-    stationData.value = data.map((entry: number[]) => {
-        return {
-            timestamp: entry[HOBO_STATION_DATA.TIMESTAMP],
-            wind: entry[HOBO_STATION_DATA.WIND],
-            gust: entry[HOBO_STATION_DATA.GUST],
-            direction: entry[HOBO_STATION_DATA.DIRECTION],
-        };
-    });
+    // Only set new `stationData` value when there is a new data from the server
+    if (
+        stationData.value.length === 0 ||
+        data.length > stationData.value.length ||
+        (data.length > 0 &&
+            data[data.length - 1][HOBO_STATION_DATA.TIMESTAMP] >
+                stationData.value[stationData.value.length - 1].timestamp)
+    ) {
+        stationData.value = data.map((entry: number[]) => {
+            return {
+                timestamp: entry[HOBO_STATION_DATA.TIMESTAMP],
+                wind: entry[HOBO_STATION_DATA.WIND],
+                gust: entry[HOBO_STATION_DATA.GUST],
+                direction: entry[HOBO_STATION_DATA.DIRECTION],
+            };
+        });
+    }
+
     if (timeout.value !== undefined) {
         clearTimeout(timeout.value);
     }
@@ -64,7 +82,7 @@ const onStationDataRecieved = (
                     dm.Streams.GustSpeed,
                     dm.Streams.WindDirection,
                 ],
-                now - CHART_DATA_INTERVAL,
+                now - chartsStore.interval,
                 now
             );
         }, STATION_REQUEST_INTERVAL);
@@ -76,6 +94,17 @@ let timeout: Ref<number | undefined> = ref(undefined);
 
 const isDocumentVisible: Ref<boolean> = useDocumentVisible();
 const stationData = ref<StationData[]>([]);
+
+const prevChartInterval = ref<number>(chartsStore.interval);
+const chartsWrapperRef = ref<HTMLDivElement>();
+const chartWidth = useElementWidth(chartsWrapperRef);
+const chartsData = computed(() => {
+    return getChartsData(
+        stationData.value,
+        chartsStore.interval,
+        chartWidth.value - Y_AXIS_WIDTH
+    );
+});
 
 watch(
     isDocumentVisible,
@@ -109,7 +138,7 @@ watch(
             // TODO: console.log only if debug
             console.log('Starting WSS connection');
             ws = new WebSocket(STATION.HOBO_WEBSOCKET_URL);
-            const dm = new DataManager(
+            dm = new DataManager(
                 ws,
                 TSDataUpdater,
                 LiveDataUpdater,
@@ -128,7 +157,7 @@ watch(
                         dm.Streams.GustSpeed,
                         dm.Streams.WindDirection,
                     ],
-                    now - CHART_DATA_INTERVAL,
+                    now - chartsStore.interval,
                     now
                 );
             };
@@ -136,6 +165,30 @@ watch(
     },
     { immediate: true }
 );
+
+chartsStore.$subscribe(() => {
+    // Make a new data network request only when setting langer chart interval.
+    // Otherwise, we should already have all the data we need
+    // from the previous network request.
+    // Divide by 1000 to compare intervals in seconds, otherwise those numbers are too big for JS🤣
+    if (chartsStore.interval / 1000 > prevChartInterval.value / 1000) {
+        if (timeout.value !== undefined) {
+            clearTimeout(timeout.value);
+        }
+        const now = Date.now();
+        dm.RequestTSData(
+            'ts-all',
+            [
+                dm.Streams.WindSpeed,
+                dm.Streams.GustSpeed,
+                dm.Streams.WindDirection,
+            ],
+            now - chartsStore.interval,
+            now
+        );
+    }
+    prevChartInterval.value = chartsStore.interval;
+});
 
 onUnmounted(() => {
     if (timeout.value !== undefined) {
@@ -152,6 +205,8 @@ onUnmounted(() => {
     <div v-if="stationData.length === 0">Loading...</div>
     <template v-else>
         <Latest :latestDataEntry="stationData[stationData.length - 1]" />
-        <WindCharts :stationData="stationData" />
+        <div ref="chartsWrapperRef">
+            <WindCharts :chartsData="chartsData" />
+        </div>
     </template>
 </template>

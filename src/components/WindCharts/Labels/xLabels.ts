@@ -1,7 +1,10 @@
 import { formatTimeHHMM, getLabelsInterval } from '@/utils/utils';
 import type { TimeRange } from '../chartsData';
 
-const X_AXIS_INTERVALS: number[] = [3600, 1800, 900, 600, 300, 30, 15];
+/**
+ * Possible intervals between labels, minutes
+ */
+const X_AXIS_INTERVALS: number[] = [300, 180, 60, 30, 15, 10, 5];
 const MIN_X_LABELS_COUNT = 1;
 
 export interface XLabels {
@@ -16,7 +19,7 @@ export const getXLabels = (
     let x: number[] = [];
     let labels: string[] = [];
 
-    const range = (chartTimeRange.end - chartTimeRange.start) / 1000;
+    const range = (chartTimeRange.end - chartTimeRange.start) / 60000;
 
     const labelWidth = 30; // TODO: make it better
     const padding = labelWidth / 5;
@@ -28,7 +31,9 @@ export const getXLabels = (
             X_AXIS_INTERVALS,
             MIN_X_LABELS_COUNT,
             maxLabelsCount
-        ) * 1000;
+        ) *
+        60 *
+        1000;
 
     let labelShouldBeAddedBy = chartTimeRange.start;
     for (

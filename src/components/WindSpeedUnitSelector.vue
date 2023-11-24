@@ -5,7 +5,7 @@ const unitStore = useUnitStore();
 </script>
 
 <template>
-    <select v-model="unitStore.unit" class="units">
+    <select v-model="unitStore.unit" class="windSpeedUnitSelector">
         <option :value="'kt'">kt</option>
         <option :value="'kmh'">kmh</option>
         <!-- TODO (with chart labels): <option :value="'m/s'">m/s</option> -->
@@ -13,7 +13,7 @@ const unitStore = useUnitStore();
 </template>
 
 <style scoped>
-.units {
+.windSpeedUnitSelector {
     position: absolute;
     top: 0;
     right: 0;
