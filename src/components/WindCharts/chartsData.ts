@@ -48,14 +48,14 @@ export interface ChartsData {
 
 export const getChartsData = (
     stationData: StationData[],
-    chartInterval: number,
+    chartTimeRange: number,
     width: number
 ): ChartsData => {
-    const chartTimeRange = {
-        start: stationData[stationData.length - 1].timestamp - chartInterval,
+    const range = {
+        start: stationData[stationData.length - 1].timestamp - chartTimeRange,
         end: stationData[stationData.length - 1].timestamp,
     };
-    const getRelativeX = getRelativeCoordinate(chartTimeRange);
+    const getRelativeX = getRelativeCoordinate(range);
     const getRelativeWindSpeedY = getRelativeCoordinate(
         CHART_WIND_SPEED_RANGE_KMH,
         true
@@ -77,7 +77,7 @@ export const getChartsData = (
         windDirections.push([x, windDirectionY, entry.wind]);
     });
 
-    const timeLabels = getXLabels(chartTimeRange, width);
+    const timeLabels = getXLabels(range, width);
     const kmhLabels = getYLabels(true);
     const ktLabels = getYLabels(false);
     const directionLabels = getYDirectionLabels();

@@ -11,7 +11,7 @@ import { useDocumentVisible } from '@/utils/useDocumentVisible';
 import { onUnmounted, ref, watch } from 'vue';
 import { useUnitStore } from '../../stores/unitStore';
 import { getWindSpeedColor } from '../../utils/windSpeedColors';
-import ChartIntervalSelector from '../ChartIntervalSelector.vue';
+import ChartTimeRangeSelector from '../ChartTimeRangeSelector.vue';
 import {
     CHART_HEIGHT,
     RELATIVE_FLYABLE_WIND_DIRECTION_RANGE_Y,
@@ -29,7 +29,6 @@ const props = defineProps<{
     latestDataTimestamp: number;
 }>();
 
-const CHART_REFRESH_INTERVAL = 3000; // ms
 const RELATIVE_HEIGHT_OF_BORDERLINE_WIND_DIRECTION_RANGE =
     ((STATION.BORDERLINE_WIND_DIRECTIONS.MAX -
         STATION.BORDERLINE_WIND_DIRECTIONS.MIN) /
@@ -54,15 +53,26 @@ const repaintCharts = (isDocumentVisible: boolean) => {
     // This results in saving battery for mobile devices.
     if (isDocumentVisible) {
         chartShift.value =
-            ((Date.now() - props.latestDataTimestamp) / chartsStore.interval) *
+            ((Date.now() - props.latestDataTimestamp) / chartsStore.timeRange) *
             100;
         const now = Date.now();
         timeLabels.value = getXLabels(
             {
-                start: now - chartsStore.interval,
+                start: now - chartsStore.timeRange,
                 end: now,
             },
             props.chartWidth
+        );
+
+        /**
+         * Determines how often to animate the charts as time passes by.
+         * Ensures that the animation results in at least 1 pixel movement,
+         * there is no value in the animation otherwise.
+         * Falls back to 1 second if the computed value is too small.
+         */
+        const chartsRefreshInterval = Math.max(
+            chartsStore.timeRange / props.chartWidth,
+            1000
         );
         intervalId = window.setInterval(() => {
             if (chartShift.value > 100) {
@@ -70,17 +80,17 @@ const repaintCharts = (isDocumentVisible: boolean) => {
             }
             chartShift.value =
                 ((Date.now() - props.latestDataTimestamp) /
-                    chartsStore.interval) *
+                    chartsStore.timeRange) *
                 100;
             const now = Date.now();
             timeLabels.value = getXLabels(
                 {
-                    start: now - chartsStore.interval,
+                    start: now - chartsStore.timeRange,
                     end: now,
                 },
                 props.chartWidth
             );
-        }, CHART_REFRESH_INTERVAL);
+        }, chartsRefreshInterval);
     }
 };
 
@@ -105,7 +115,7 @@ onUnmounted(() => {
 
 <template>
     <div class="speedChart">
-        <ChartIntervalSelector />
+        <ChartTimeRangeSelector />
         <div class="title">{{ unitStore.unit }}</div>
         <div class="chart">
             <svg

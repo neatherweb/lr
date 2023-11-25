@@ -79,7 +79,7 @@ const onStationDataRecieved = (
                     dm.Streams.GustSpeed,
                     dm.Streams.WindDirection,
                 ],
-                now - chartsStore.interval,
+                now - chartsStore.timeRange,
                 now
             );
         }, STATION_REQUEST_INTERVAL);
@@ -95,14 +95,14 @@ let dm: DataManager;
 const isDocumentVisible: Ref<boolean> = useDocumentVisible();
 const stationData = ref<StationData[]>([]);
 
-const prevChartInterval = ref<number>(chartsStore.interval);
+const prevChartTimeRange = ref<number>(chartsStore.timeRange);
 const chartsWrapperRef = ref<HTMLDivElement>();
 const chartsWrapperWidth = useElementWidth(chartsWrapperRef);
 const chartsData = computed(() => {
     return chartsWrapperWidth.value > 0
         ? getChartsData(
               stationData.value,
-              chartsStore.interval,
+              chartsStore.timeRange,
               chartsWrapperWidth.value - Y_AXIS_WIDTH
           )
         : undefined;
@@ -159,7 +159,7 @@ watch(
                         dm.Streams.GustSpeed,
                         dm.Streams.WindDirection,
                     ],
-                    now - chartsStore.interval,
+                    now - chartsStore.timeRange,
                     now
                 );
             };
@@ -173,7 +173,7 @@ chartsStore.$subscribe(() => {
     // Otherwise, we should already have all the data we need
     // from the previous network request.
     // Without BigInt those numbers are too big for JS🤣 and it doesn't work.
-    if (BigInt(chartsStore.interval) > BigInt(prevChartInterval.value)) {
+    if (BigInt(chartsStore.timeRange) > BigInt(prevChartTimeRange.value)) {
         if (timeout.value !== undefined) {
             clearTimeout(timeout.value);
         }
@@ -185,11 +185,11 @@ chartsStore.$subscribe(() => {
                 dm.Streams.GustSpeed,
                 dm.Streams.WindDirection,
             ],
-            now - chartsStore.interval,
+            now - chartsStore.timeRange,
             now
         );
     }
-    prevChartInterval.value = chartsStore.interval;
+    prevChartTimeRange.value = chartsStore.timeRange;
 });
 
 onUnmounted(() => {
