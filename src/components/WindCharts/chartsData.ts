@@ -51,11 +51,9 @@ export const getChartsData = (
     chartInterval: number,
     width: number
 ): ChartsData => {
-    let now = Date.now();
-    now = now - (now % 1000);
     const chartTimeRange = {
-        start: now - chartInterval,
-        end: now,
+        start: stationData[stationData.length - 1].timestamp - chartInterval,
+        end: stationData[stationData.length - 1].timestamp,
     };
     const getRelativeX = getRelativeCoordinate(chartTimeRange);
     const getRelativeWindSpeedY = getRelativeCoordinate(

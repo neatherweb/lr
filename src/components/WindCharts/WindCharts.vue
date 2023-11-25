@@ -7,7 +7,8 @@ export const Y_AXIS_WIDTH = 30;
 
 <script setup lang="ts">
 import { STATION } from '@/station';
-import { onUnmounted } from 'vue';
+import { useDocumentVisible } from '@/utils/useDocumentVisible';
+import { onUnmounted, ref, watch } from 'vue';
 import { useUnitStore } from '../../stores/unitStore';
 import { getWindSpeedColor } from '../../utils/windSpeedColors';
 import ChartIntervalSelector from '../ChartIntervalSelector.vue';
@@ -19,13 +20,16 @@ import {
 import XAxis from './XAxis.vue';
 import YAxis from './YAxis.vue';
 import { type ChartsData } from './chartsData';
+import { useChartsStore } from '@/stores/chartsStore';
+import { getXLabels } from './Labels/xLabels';
 
-// const props = defineProps<{
-defineProps<{
+const props = defineProps<{
     chartsData: ChartsData;
+    chartWidth: number;
+    latestDataTimestamp: number;
 }>();
 
-// const CHART_REFRESH_INTERVAL = 3000; // ms
+const CHART_REFRESH_INTERVAL = 3000; // ms
 const RELATIVE_HEIGHT_OF_BORDERLINE_WIND_DIRECTION_RANGE =
     ((STATION.BORDERLINE_WIND_DIRECTIONS.MAX -
         STATION.BORDERLINE_WIND_DIRECTIONS.MIN) /
@@ -34,32 +38,63 @@ const RELATIVE_HEIGHT_OF_BORDERLINE_WIND_DIRECTION_RANGE =
 const RELATIVE_BORDERLINE_WIND_DIRECTION_RANGE_Y =
     (100 - RELATIVE_HEIGHT_OF_BORDERLINE_WIND_DIRECTION_RANGE) / 2;
 
-// const isDocumentVisible = useDocumentVisible();
+const isDocumentVisible = useDocumentVisible();
 const unitStore = useUnitStore();
+const chartsStore = useChartsStore();
+
+const chartShift = ref(0);
+const timeLabels = ref();
 
 let intervalId: number | undefined = undefined;
+const repaintCharts = (isDocumentVisible: boolean) => {
+    if (intervalId !== undefined) {
+        clearInterval(intervalId);
+    }
+    // Repaint charts only if current browser tab is active.
+    // This results in saving battery for mobile devices.
+    if (isDocumentVisible) {
+        chartShift.value =
+            ((Date.now() - props.latestDataTimestamp) / chartsStore.interval) *
+            100;
+        const now = Date.now();
+        timeLabels.value = getXLabels(
+            {
+                start: now - chartsStore.interval,
+                end: now,
+            },
+            props.chartWidth
+        );
+        intervalId = window.setInterval(() => {
+            if (chartShift.value > 100) {
+                clearInterval(intervalId);
+            }
+            chartShift.value =
+                ((Date.now() - props.latestDataTimestamp) /
+                    chartsStore.interval) *
+                100;
+            const now = Date.now();
+            timeLabels.value = getXLabels(
+                {
+                    start: now - chartsStore.interval,
+                    end: now,
+                },
+                props.chartWidth
+            );
+        }, CHART_REFRESH_INTERVAL);
+    }
+};
 
-// const repaintCharts = (isDocumentVisible: boolean, chartWidth: number) => {
-//     if (intervalId !== undefined) {
-//         clearInterval(intervalId);
-//     }
-//     // Repaint charts only if current browser tab is active.
-//     // This results in saving battery for mobile devices.
-//     if (isDocumentVisible && chartWidth > 0) {
-//         // transform
-//         intervalId = window.setInterval(() => {
-//             // transform
-//         }, CHART_REFRESH_INTERVAL);
-//     }
-// };
+watch(
+    [isDocumentVisible],
+    ([isDocumentVisible]) => {
+        repaintCharts(isDocumentVisible);
+    },
+    { immediate: true }
+);
 
-// watch(
-//     [isDocumentVisible, chartWidth],
-//     ([isDocumentVisible, chartWidth]) => {
-//         repaintCharts(isDocumentVisible, chartWidth);
-//     },
-//     { immediate: true }
-// );
+chartsStore.$subscribe(() => {
+    repaintCharts(isDocumentVisible.value);
+});
 
 onUnmounted(() => {
     if (intervalId !== undefined) {
@@ -77,6 +112,7 @@ onUnmounted(() => {
                 v-if="chartsData && chartsData.windSpeedXYPoints.length > 0"
                 width="100%"
                 :height="CHART_HEIGHT"
+                :style="`transform: translateX(-${chartShift}%)`"
             >
                 <polyline
                     key="gust"
@@ -94,7 +130,7 @@ onUnmounted(() => {
             </svg>
         </div>
         <template v-if="chartsData !== undefined">
-            <XAxis :xLabels="chartsData.timeLabels" />
+            <XAxis :xLabels="timeLabels" />
             <YAxis
                 v-if="unitStore.unit === 'kmh'"
                 :yLabels="chartsData.kmhLabels"
@@ -110,7 +146,11 @@ onUnmounted(() => {
         class="directionChart"
     >
         <div class="chart">
-            <svg width="100%" :height="CHART_HEIGHT">
+            <svg
+                width="100%"
+                :height="CHART_HEIGHT"
+                :style="`overflow: visible; transform: translateX(-${chartShift}%)`"
+            >
                 <rect
                     width="100%"
                     :height="
@@ -156,6 +196,7 @@ onUnmounted(() => {
 
 .chart {
     grid-area: chart;
+    overflow: hidden;
 }
 
 .speedChart .title {

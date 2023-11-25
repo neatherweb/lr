@@ -35,9 +35,6 @@ enum HOBO_STATION_DATA {
     DIRECTION,
 }
 
-const chartsStore = useChartsStore();
-let dm: DataManager;
-
 const onStationDataRecieved = (
     data: number[][],
     isDocumentVisible: boolean,
@@ -92,18 +89,23 @@ const onStationDataRecieved = (
 let ws: WebSocket | undefined;
 let timeout: Ref<number | undefined> = ref(undefined);
 
+const chartsStore = useChartsStore();
+let dm: DataManager;
+
 const isDocumentVisible: Ref<boolean> = useDocumentVisible();
 const stationData = ref<StationData[]>([]);
 
 const prevChartInterval = ref<number>(chartsStore.interval);
 const chartsWrapperRef = ref<HTMLDivElement>();
-const chartWidth = useElementWidth(chartsWrapperRef);
+const chartsWrapperWidth = useElementWidth(chartsWrapperRef);
 const chartsData = computed(() => {
-    return getChartsData(
-        stationData.value,
-        chartsStore.interval,
-        chartWidth.value - Y_AXIS_WIDTH
-    );
+    return chartsWrapperWidth.value > 0
+        ? getChartsData(
+              stationData.value,
+              chartsStore.interval,
+              chartsWrapperWidth.value - Y_AXIS_WIDTH
+          )
+        : undefined;
 });
 
 watch(
@@ -170,8 +172,8 @@ chartsStore.$subscribe(() => {
     // Make a new data network request only when setting langer chart interval.
     // Otherwise, we should already have all the data we need
     // from the previous network request.
-    // Divide by 1000 to compare intervals in seconds, otherwise those numbers are too big for JS🤣
-    if (chartsStore.interval / 1000 > prevChartInterval.value / 1000) {
+    // Without BigInt those numbers are too big for JS🤣 and it doesn't work.
+    if (BigInt(chartsStore.interval) > BigInt(prevChartInterval.value)) {
         if (timeout.value !== undefined) {
             clearTimeout(timeout.value);
         }
@@ -206,7 +208,14 @@ onUnmounted(() => {
     <template v-else>
         <Latest :latestDataEntry="stationData[stationData.length - 1]" />
         <div ref="chartsWrapperRef">
-            <WindCharts :chartsData="chartsData" />
+            <WindCharts
+                v-if="chartsData !== undefined"
+                :chartsData="chartsData"
+                :chartWidth="chartsWrapperWidth - Y_AXIS_WIDTH"
+                :latestDataTimestamp="
+                    stationData[stationData.length - 1].timestamp
+                "
+            />
         </div>
     </template>
 </template>
