@@ -27,6 +27,10 @@ export const kmhToKnots = (kmh: number): number => {
     return kmh / 1.852;
 };
 
+export const knotsToKmh = (kt: number): number => {
+    return kt * 1.852;
+};
+
 const roundToOneDecimalPlace = (num: number): number => {
     return (
         Math.sign(num) *

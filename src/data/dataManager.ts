@@ -1,3 +1,5 @@
+import { STATION } from '@/station';
+
 const streams = {
     WindSpeed: '21868479-21864669-1-1-Wind_Speed',
     GustSpeed: '21868479-21864669-2-1-Gust_Speed',
@@ -16,10 +18,10 @@ function getTSParams(streams: any, from_date: any, to_date: any) {
         aggregationRange: 10,
         display_metric: 'si',
         fetchPeriod: 'past_day',
-        fetchTimeZone: 'Australia/Sydney',
-        dockey: '518E7EB4CE5AFEEC894D92E671A312D3',
-        from_date: from_date,
-        to_date: to_date,
+        fetchTimeZone: STATION.TIMEZONE,
+        dockey: STATION.HOBO_DASHBOARD_DOCKEY,
+        from_date,
+        to_date,
     };
     return body;
 }
@@ -32,8 +34,8 @@ function getLatestParams(stream: any) {
         aggregationRange: 10,
         display_metric: 'si',
         fetchPeriod: 'past_day',
-        fetchTimeZone: 'Australia/Sydney',
-        dockey: '518E7EB4CE5AFEEC894D92E671A312D3',
+        fetchTimeZone: STATION.TIMEZONE,
+        dockey: STATION.HOBO_DASHBOARD_DOCKEY,
     };
     return body;
 }

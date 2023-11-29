@@ -48,14 +48,14 @@ export interface YLabels {
     labels: string[];
 }
 
-export const getYLabels = (ci: boolean): YLabels => {
+export const getYLabels = (si: boolean): YLabels => {
     let y: number[] = [];
     let labels: string[] = [];
 
-    const min = ci
+    const min = si
         ? CHART_WIND_SPEED_RANGE_KMH.start
         : CHART_WIND_SPEED_RANGE_KT.start;
-    const max = ci
+    const max = si
         ? CHART_WIND_SPEED_RANGE_KMH.end
         : CHART_WIND_SPEED_RANGE_KT.end;
 

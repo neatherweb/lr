@@ -24,6 +24,7 @@ import { STATION } from './station';
 import { useChartsStore } from './stores/chartsStore';
 import { useDocumentVisible } from './utils/useDocumentVisible';
 import { useElementWidth } from './utils/useElementWidth';
+import { knotsToKmh } from './utils/utils';
 
 /**
  * HOBO's `WebSocket` data format
@@ -51,14 +52,25 @@ const onStationDataRecieved = (
             data[data.length - 1][HOBO_STATION_DATA.TIMESTAMP] >
                 stationData.value[stationData.value.length - 1].timestamp)
     ) {
-        stationData.value = data.map((entry: number[]) => {
-            return {
-                timestamp: entry[HOBO_STATION_DATA.TIMESTAMP],
-                wind: entry[HOBO_STATION_DATA.WIND],
-                gust: entry[HOBO_STATION_DATA.GUST],
-                direction: entry[HOBO_STATION_DATA.DIRECTION],
-            };
-        });
+        if (STATION.HOBO_DASHBOARD_UNIT === 'kmh') {
+            stationData.value = data.map((entry: number[]) => {
+                return {
+                    timestamp: entry[HOBO_STATION_DATA.TIMESTAMP],
+                    wind: entry[HOBO_STATION_DATA.WIND],
+                    gust: entry[HOBO_STATION_DATA.GUST],
+                    direction: entry[HOBO_STATION_DATA.DIRECTION],
+                } as StationData;
+            });
+        } else if (STATION.HOBO_DASHBOARD_UNIT === 'kt') {
+            stationData.value = data.map((entry: number[]) => {
+                return {
+                    timestamp: entry[HOBO_STATION_DATA.TIMESTAMP],
+                    wind: knotsToKmh(entry[HOBO_STATION_DATA.WIND]),
+                    gust: knotsToKmh(entry[HOBO_STATION_DATA.GUST]),
+                    direction: entry[HOBO_STATION_DATA.DIRECTION],
+                } as StationData;
+            });
+        }
     }
 
     if (timeout.value !== undefined) {
